@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -57,6 +57,10 @@ fun SignupScreen(modifier: Modifier = Modifier,
 
     var password by remember {
         mutableStateOf(value = "")
+    }
+
+    var isLoading by remember {
+        mutableStateOf(false)
     }
 
     var context = LocalContext.current
@@ -158,10 +162,17 @@ fun SignupScreen(modifier: Modifier = Modifier,
 
         Button(
             onClick = {
+                isLoading = true
                 authViewModel.signup(email, name, password) { success, errorMessage ->
                     if(success) {
-                        navController.navigate(route = "login")
+                        isLoading = false
+                        navController.navigate(route = "home") {
+                            popUpTo("auth") {
+                                inclusive = true
+                            }
+                        }
                     } else {
+                        isLoading = false
                         AppUtil.showToast(
                             context,
                             errorMessage?:"Something went wrong..."
@@ -169,6 +180,7 @@ fun SignupScreen(modifier: Modifier = Modifier,
                     }
                 }
             },
+            enabled = !isLoading, // Disables button during background load
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp),
@@ -180,7 +192,7 @@ fun SignupScreen(modifier: Modifier = Modifier,
             )
         ) {
             Text(
-                text = "Sign Up",
+                text = if(isLoading) "Creating Account" else "Sign Up",
                 fontSize = 22.sp
             )
         }
@@ -200,7 +212,8 @@ fun SignupScreen(modifier: Modifier = Modifier,
                     contentDescription = "Return Home"
                 )
             },
-            modifier = Modifier.offset(150.dp, 0.dp)
+            modifier = Modifier
+                .offset(150.dp, 0.dp)
         )
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -32,12 +33,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.vimal.rainyshop.R
 import com.vimal.rainyshop.ui.theme.YellowSZ
+import com.vimal.rainyshop.utils.AppUtil
+import com.vimal.rainyshop.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+fun LoginScreen(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember {
         mutableStateOf(value = "")
     }
@@ -45,6 +49,12 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavHostController)
     var password by remember {
         mutableStateOf(value = "")
     }
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    var context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -121,8 +131,25 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavHostController)
 
         Button(
             onClick = {
-
+                isLoading = true
+                authViewModel.login(email, password) { success, errorMessage ->
+                    if(success) {
+                        isLoading = false
+                        navController.navigate(route = "home") {
+                            popUpTo("auth") {
+                                inclusive = true
+                            }
+                        }
+                    } else {
+                        isLoading = false
+                        AppUtil.showToast(
+                            context,
+                            errorMessage?:"Something went wrong..."
+                        )
+                    }
+                }
             },
+            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp),
@@ -134,7 +161,7 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavHostController)
             )
         ) {
             Text(
-                text = "Log In",
+                text = if(isLoading) "Logging In" else "Log In",
                 fontSize = 22.sp
             )
         }
