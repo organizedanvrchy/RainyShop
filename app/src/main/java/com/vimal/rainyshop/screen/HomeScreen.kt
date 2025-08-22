@@ -13,7 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,7 +34,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavHostController) 
     )
 
     var selectedIndex by remember {
-        mutableStateOf(0)
+        mutableIntStateOf(0)
     }
 
     Scaffold(
@@ -61,16 +61,20 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavHostController) 
             }
         }
     ) {
-        ContentScreen(modifier = modifier.padding(it), selectedIndex)
+        ContentScreen(modifier = modifier.padding(it), selectedIndex, navController)
     }
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int) {
+fun ContentScreen(
+    modifier: Modifier = Modifier,
+    selectedIndex: Int,
+    navController: NavHostController
+) {
     when(selectedIndex) {
         0 -> HomePage(modifier)
         1 -> CartPage(modifier)
-        2 -> ProfilePage(modifier)
+        2 -> ProfilePage(modifier, navController)
         3 -> SettingsPage(modifier)
     }
 }
